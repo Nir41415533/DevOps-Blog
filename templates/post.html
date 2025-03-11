@@ -1,0 +1,91 @@
+{% from "bootstrap5/form.html" import render_form %}
+{% include "header.html" %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{ post.title }}</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <!-- CKEditor (Latest Secure Version) -->
+    <script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
+</head>
+<body>
+
+<!-- Page Header -->
+<header class="masthead" style="background-image: url('{{ post.img_url }}'); height: 300px; padding-top: 50px;">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="post-heading text-center">
+                    <h1 style="margin-top: 30px;">{{ post.title }}</h1> <!-- הרמת כותרת הפוסט -->
+                    <h2 class="subheading">{{ post.subtitle }}</h2>
+                    <span class="meta">
+                        Posted by <a href="#">{{ post.author.name }}</a> on {{ post.date }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+              <div class="post-content">
+                {{ post.body | safe | replace('<p>', '<p class="lead">') }}
+            </div>
+
+                <!-- Edit Post Button (Only for Admin) -->
+                {% if current_user.id == 1 %}
+                <div class="d-flex justify-content-end mb-4">
+                    <a class="btn btn-primary float-right" href="{{ url_for('edit_post', post_id=post.id) }}">
+                        Edit Post
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Comment Section -->
+                <hr>
+                <h4 class="mt-4">Leave a Comment</h4>
+                {{ ckeditor.load() }}
+                {{ ckeditor.config(name='comment_text') }}
+                {{ render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+
+                <!-- Display Comments -->
+                <div class="comment-section mt-3">
+                    <ul class="commentList list-unstyled">
+                        {% for comment in post.comments %}
+                        <li class="media my-4">
+                            <img class="mr-3 rounded-circle" src="{{ comment.comment_author.email | gravatar }}" alt="User Avatar" width="50">
+                            <div class="media-body">
+                                <h6 class="mt-0 mb-1">{{ comment.comment_author.name }}</h6>
+                                {{ comment.text }}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+
+<!-- Footer -->
+{% include "footer.html" %}
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
